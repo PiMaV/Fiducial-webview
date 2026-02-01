@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>ArUco 4×4 Web Scanner</title>
+  <link rel="icon" href="https://mess.engineering/favicon/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="https://mess.engineering/favicon/apple-touch-icon.png">
   <style>
     :root {
       --bg: #0f0f12;
@@ -28,6 +30,12 @@
     }
     h1 { font-size: clamp(1.2rem, 4vw, 1.5rem); font-weight: 600; color: var(--accent); margin: 0 0 0.5rem 0; }
     .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; }
+    @media (max-width: 640px) {
+      body { padding: 0.5rem 0.5rem 1rem; }
+      h1 { font-size: 1rem; margin-bottom: 0.25rem; }
+      .sub { font-size: 0.75rem; margin-bottom: 0.5rem; line-height: 1.2; }
+      .controls { margin-top: 0.5rem; margin-bottom: 0.5rem; }
+    }
     .live-row { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; width: 100%; max-width: 960px; }
     .viewport, .viewport-debug {
       position: relative;
@@ -84,6 +92,10 @@
     .secure-warning strong { color: var(--error); }
     .markers-line { margin-top: 0.5rem; font-size: 0.85rem; color: var(--muted); min-height: 1.2em; }
     .markers-line .ids { color: var(--accent); }
+    .footer-by { margin-top: auto; padding: 1rem 0.5rem 0.75rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
+    .footer-by a { color: var(--accent); text-decoration: none; }
+    .footer-by a:hover { text-decoration: underline; }
+    .footer-by img { vertical-align: middle; margin-right: 0.35rem; height: 1.1em; width: auto; }
     .debug-label { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; color: var(--muted); font-size: 0.85rem; pointer-events: none; }
     @media (max-width: 640px) {
       .controls label, .controls button { min-height: 44px; }
@@ -98,6 +110,17 @@
     <strong>Camera not available</strong><br>
     <code>getUserMedia</code> only works in a <strong>secure context</strong>: HTTPS or <code>localhost</code>.
     Open this page via <code>https://your-site.github.io/...</code> or <code>http://localhost</code> — not <code>file://</code> or plain HTTP.
+  </div>
+
+  <div class="controls">
+    <button id="btnStart" class="primary">Start camera</button>
+    <button id="btnStop" disabled>Stop camera</button>
+    <label title="Enable if IDs are wrong – compensates mirrored webcam.">
+      <input type="checkbox" id="mirrorForDetection"> Mirror image
+    </label>
+    <label>Dictionary: <select id="dictSize"><option value="50">4×4 (50)</option><option value="250" selected>4×4 (250)</option><option value="1000">4×4 (1000)</option></select></label>
+    <label>ID convention: <select id="dictConvention"><option value="0">Normal</option><option value="1" selected>Byte swap (OpenCV/arucogen)</option><option value="2">Bit reverse</option><option value="3">Byte + bit</option></select></label>
+    <label>Scanner input: <select id="debugMode"><option value="gray">Gray</option><option value="binary" selected>Binary</option></select></label>
   </div>
 
   <div class="live-row">
@@ -115,20 +138,15 @@
     Left: camera + green boxes (ID). Right: what the scanner sees (gray / binary).
   </p>
 
-  <div class="controls">
-    <button id="btnStart" class="primary">Start camera</button>
-    <button id="btnStop" disabled>Stop camera</button>
-    <label><input type="checkbox" id="autoScan" checked> Auto-scan</label>
-    <label title="Enable if IDs are wrong – compensates mirrored webcam.">
-      <input type="checkbox" id="mirrorForDetection"> Mirror image
-    </label>
-    <label>Dictionary: <select id="dictSize"><option value="50">4×4 (50)</option><option value="250" selected>4×4 (250)</option><option value="1000">4×4 (1000)</option></select></label>
-    <label>ID convention: <select id="dictConvention"><option value="0">Normal</option><option value="1" selected>Byte swap (OpenCV/arucogen)</option><option value="2">Bit reverse</option><option value="3">Byte + bit</option></select></label>
-    <label>Scanner input: <select id="debugMode"><option value="gray">Gray</option><option value="binary" selected>Binary</option></select></label>
-  </div>
-
   <p class="status" id="status">Load over HTTPS or localhost, then start the camera.</p>
   <p class="markers-line" id="markersLine" aria-live="polite"></p>
+
+  <p class="footer-by">
+    <a href="https://mess.engineering" target="_blank" rel="noopener" title="Mattern Engineering &amp; Software Solutions">
+      <img src="https://mess.engineering/favicon/favicon-32x32.png" alt="" width="16" height="16" loading="lazy">
+      Brought to you by M.E.S.S.
+    </a>
+  </p>
 
   <script src="https://cdn.jsdelivr.net/gh/damianofalcioni/js-aruco2@master/src/cv.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/damianofalcioni/js-aruco2@master/src/aruco.js"></script>
@@ -194,7 +212,6 @@
       var canvas = document.getElementById('canvas');
       var btnStart = document.getElementById('btnStart');
       var btnStop = document.getElementById('btnStop');
-      var autoScan = document.getElementById('autoScan');
       var mirrorForDetection = document.getElementById('mirrorForDetection');
       var dictSize = document.getElementById('dictSize');
       var dictConvention = document.getElementById('dictConvention');
