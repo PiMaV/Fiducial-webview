@@ -17,12 +17,6 @@ Simple HTML-based ArUco live view to test markers in the browser. One file, no s
   - Use the GitHub Pages link above (HTTPS), or
   - Run locally: `npx serve . -p 8080` then open **http://localhost:8080**.
 
-## Deploy (e.g. GitHub Pages)
-
-1. Push this repo to GitHub.
-2. **Settings → Pages → Source**: branch `main`, folder `/ (root)`.
-3. Your site will be at `https://<username>.github.io/<repo>/`.
-
 ## Project
 
 | File        | Purpose                    |
