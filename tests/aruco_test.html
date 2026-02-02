@@ -16,9 +16,9 @@
   </style>
 </head>
 <body>
-  <h1>ArUco Test — nur ID 0 und ID 1</h1>
-  <p>Vier Varianten (Zeichenlogik: MSB oben links, wie js-aruco2). Scanner: <a href="scanner.html">scanner.html</a> —<br>
-  ID Convention „Normal“ und „Byte swap (OpenCV)“ testen. Welche Variante liefert ID 0 bzw. 1?</p>
+  <h1>ArUco Test — ID 0 and ID 1</h1>
+  <p>Four variants (drawing: MSB top-left, same as js-aruco2). Scanner: <a href="../scanner.html">scanner.html</a> —<br>
+  Try ID convention "Normal" and "Byte swap (OpenCV)" to see which gives ID 0 and 1.</p>
 
   <div class="row" id="out"></div>
 
@@ -30,7 +30,7 @@
 
       function byteSwap16(code) { return ((code & 0xff) << 8) | (code >>> 8); }
 
-      // js-aruco2: MSB oben links; innere Matrix invertiert (1 = weiß, 0 = schwarz).
+      // js-aruco2: MSB top-left; inner matrix inverted (1 = white, 0 = black).
       function drawMarker(ctx, code, x, y, cellPx) {
         var size = 6 * cellPx;
         ctx.fillStyle = '#000';

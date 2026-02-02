@@ -28,9 +28,9 @@
       var APRILTAG_BIT_X = [1,2,3,4,5,2,3,4,3,6,6,6,6,6,5,5,5,4,6,5,4,3,2,5,4,3,4,1,1,1,1,1,2,2,2,3];
       var APRILTAG_BIT_Y = [1,1,1,1,1,2,2,2,3,1,2,3,4,5,2,3,4,3,6,6,6,6,6,5,5,5,4,6,5,4,3,2,5,4,3,4];
 
-      // AprilTag 36h11: 8x8, 1-Zellen-Rahmen – exakt gleiche Logik wie apriltag36h11_gen.py.
-      // Wichtig: Code ist 36 Bit; JS-Bitoperationen (>>> &) nutzen nur 32 Bit → obere 4 Bits wären 0.
-      // Bit i (0=MSB) sicher extrahieren: Math.floor(code / 2^(35-i)) & 1
+      // AprilTag 36h11: 8x8, 1-cell border — same logic as apriltag36h11_gen.py.
+      // Code is 36-bit; JS bitwise ops (>>> &) use only 32 bits, so use getBit36.
+      // Bit i (0=MSB): Math.floor(code / 2^(35-i)) & 1
       var SIZE_CELLS = 8;
       function getBit36(code, bitIndex) {
         return (Math.floor(code / Math.pow(2, 35 - bitIndex)) & 1);
@@ -70,7 +70,7 @@
         wrap.appendChild(div);
       }
 
-      // Bit-Dump zur Kontrolle: für ID 0,1,2 die 36 Bits (MSB=0) und Position (x,y)
+      // Bit dump for verification: for IDs 0,1,2 the 36 bits (MSB=0) and position (x,y)
       var dump = document.getElementById('bitDump');
       var tbl = document.createElement('table');
       var header = '<tr><th>ID</th><th>Code (hex)</th>';
@@ -89,7 +89,7 @@
         tbl.insertAdjacentHTML('beforeend', row);
       }
       dump.appendChild(tbl);
-      dump.innerHTML += '<p style="margin-top:0.5rem;">36 Bit (JS: getBit36, da <code>>>></code> nur 32 Bit nutzt), 8×8 – gleiche Codes wie apriltag36h11_gen.py.</p>';
+      dump.innerHTML += '<p style="margin-top:0.5rem;">36 bits (getBit36 used because JS <code>>>></code> is 32-bit only), 8×8 — same codes as apriltag36h11_gen.py.</p>';
     })();
   </script>
 </body>

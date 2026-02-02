@@ -22,6 +22,9 @@ SOFTWARE.
 
 ---
 
-This project uses:
-- js-aruco2 (https://github.com/damianofalcioni/js-aruco2)
-Its license applies to that component. Dictionary: built-in OpenCV DICT_4X4_250.
+Third-party components and data (their licenses apply):
+
+- js-aruco2 (https://github.com/damianofalcioni/js-aruco2) — ArUco detection in the browser.
+- AprilTag detection: script loaded from arenaxr.github.io/apriltag-js-standalone (WASM); see that project for license.
+- ArUco dictionaries: OpenCV-style DICT_4X4 (50, 250, 1000 codes); byte-swap option for OpenCV compatibility.
+- AprilTag 36h11: 587 codes, same layout as the official 36h11 family (AprilRobotics); used for generation and display only; detection uses the standalone WASM build above.
