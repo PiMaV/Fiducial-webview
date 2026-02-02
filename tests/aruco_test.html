@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArUco Test — ID 0 &amp; 1</title>
+  <style>
+    body { font-family: monospace; background: #1a1a20; color: #e8e8ec; padding: 1rem; margin: 0; }
+    h1 { font-size: 1.1rem; color: #00d4aa; }
+    p { font-size: 0.85rem; color: #888; margin-bottom: 1rem; }
+    .row { display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2rem; }
+    .cell { text-align: center; }
+    .cell label { display: block; font-size: 0.8rem; color: #00d4aa; margin-top: 0.5rem; }
+    canvas { display: block; background: #fff; border: 1px solid #444; }
+    a { color: #00d4aa; }
+  </style>
+</head>
+<body>
+  <h1>ArUco Test — nur ID 0 und ID 1</h1>
+  <p>Vier Varianten (Zeichenlogik: MSB oben links, wie js-aruco2). Scanner: <a href="scanner.html">scanner.html</a> —<br>
+  ID Convention „Normal“ und „Byte swap (OpenCV)“ testen. Welche Variante liefert ID 0 bzw. 1?</p>
+
+  <div class="row" id="out"></div>
+
+  <script>
+    (function () {
+      // Nur die ersten zwei Codes (wie im Scanner)
+      var C0 = 0x32b5;  // ID 0
+      var C1 = 0x9a0f;  // ID 1
+
+      function byteSwap16(code) { return ((code & 0xff) << 8) | (code >>> 8); }
+
+      // js-aruco2: MSB oben links; innere Matrix invertiert (1 = weiß, 0 = schwarz).
+      function drawMarker(ctx, code, x, y, cellPx) {
+        var size = 6 * cellPx;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x, y, size, size);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x + cellPx, y + cellPx, 4 * cellPx, 4 * cellPx);
+        ctx.fillStyle = '#fff';
+        for (var r = 0; r < 4; r++) {
+          for (var c = 0; c < 4; c++) {
+            var bitIdx = 15 - (r * 4 + c);
+            var bit = (code >>> bitIdx) & 1;
+            if (bit) ctx.fillRect(x + (c + 1) * cellPx, y + (r + 1) * cellPx, cellPx, cellPx);
+          }
+        }
+      }
+
+      var cellPx = 24;
+      var size = 6 * cellPx;
+      var pad = 8;
+
+      var variants = [
+        { id: 0, code: C0, label: 'ID 0 — raw (0x32b5)' },
+        { id: 0, code: byteSwap16(C0), label: 'ID 0 — byte swap (0x' + (byteSwap16(C0) >>> 0).toString(16) + ')' },
+        { id: 1, code: C1, label: 'ID 1 — raw (0x9a0f)' },
+        { id: 1, code: byteSwap16(C1), label: 'ID 1 — byte swap (0x' + (byteSwap16(C1) >>> 0).toString(16) + ')' }
+      ];
+
+      var wrap = document.getElementById('out');
+      variants.forEach(function (v) {
+        var canvas = document.createElement('canvas');
+        canvas.width = size + pad * 2;
+        canvas.height = size + pad * 2 + 4;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawMarker(ctx, v.code, pad, pad, cellPx);
+        var cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.appendChild(canvas);
+        var lab = document.createElement('label');
+        lab.textContent = v.label;
+        cell.appendChild(lab);
+        wrap.appendChild(cell);
+      });
+    })();
+  </script>
+</body>
+</html>
