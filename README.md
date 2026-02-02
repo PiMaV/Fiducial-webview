@@ -1,14 +1,14 @@
 # ArUco 4×4 Web Scanner
 
-Simple HTML-based ArUco live view to test markers in the browser. One file, no server. Works on GitHub Pages and any static host.
+HTML-based ArUco scanner and pattern generator. Runs in the browser, no server. Works on GitHub Pages and any static host.
 
-**Live:** [https://PiMaV.github.io/aruco-webview/](https://PiMaV.github.io/aruco-webview/)
+**Live:** [https://aruco.mess.engineering](https://aruco.mess.engineering)
 
 ## What it does
 
-- **4×4 ArUco** – Dictionary sizes 50, 250, or 1000 (same codes as [arucogen](https://chev.me/arucogen/)).
-- **In-browser detection** via [js-aruco2](https://github.com/damianofalcioni/js-aruco2); marker codes loaded from [okalachev/arucogen](https://github.com/okalachev/arucogen).
-- **Camera** – Live video, green overlay with marker IDs, optional gray/binary debug view with pseudo-3D boxes.
+- **4×4 ArUco** – Dictionary sizes 50 and 250 (built-in, same codes as OpenCV DICT_4X4_250).
+- **In-browser detection** via [js-aruco2](https://github.com/damianofalcioni/js-aruco2); dictionary embedded (no external fetch).
+- **Camera** – Live video, cyan overlay with marker IDs, optional gray/binary debug view with pseudo-3D boxes (magenta).
 - **Mobile-friendly** – Throttled on small screens; works in mobile browsers over HTTPS.
 
 ## Requirements
@@ -19,12 +19,14 @@ Simple HTML-based ArUco live view to test markers in the browser. One file, no s
 
 ## Project
 
-| File        | Purpose                    |
-|------------|----------------------------|
-| **index.html** | The scanner (single file). |
+| File             | Purpose                                      |
+|------------------|----------------------------------------------|
+| **index.html**   | Landing page (links to Scanner & Generator). |
+| **scanner.html** | Camera-based ArUco scanner.                  |
+| **generator.html** | Pattern generator (grid, Smiley preset, PNG download). |
 
 ## License
 
 **MIT** – see [LICENSE](LICENSE).
 
-Uses [js-aruco2](https://github.com/damianofalcioni/js-aruco2) and [arucogen](https://github.com/okalachev/arucogen) dictionary data; their licenses apply to those parts.
+Uses [js-aruco2](https://github.com/damianofalcioni/js-aruco2); its license applies. Dictionary: built-in OpenCV DICT_4X4_250.

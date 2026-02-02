@@ -24,5 +24,4 @@ SOFTWARE.
 
 This project uses:
 - js-aruco2 (https://github.com/damianofalcioni/js-aruco2)
-- arucogen dictionary data (https://github.com/okalachev/arucogen)
-Their respective licenses apply to those components.
+Its license applies to that component. Dictionary: built-in OpenCV DICT_4X4_250.

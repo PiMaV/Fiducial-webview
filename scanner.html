@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>ArUco 4×4 Web Scanner</title>
+  <link rel="icon" href="https://mess.engineering/favicon/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="https://mess.engineering/favicon/apple-touch-icon.png">
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --surface: #1a1a20;
+      --border: #2a2a32;
+      --accent: #00d4aa;
+      --text: #e8e8ec;
+      --muted: #888;
+      --error: #e05555;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+    h1 { font-size: clamp(1.2rem, 4vw, 1.5rem); font-weight: 600; color: var(--accent); margin: 0 0 0.5rem 0; }
+    .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.35rem; }
+    .nav-links { font-size: 0.9rem; margin-bottom: 1rem; }
+    .nav-links a { color: var(--accent); text-decoration: none; }
+    .nav-links a:hover { text-decoration: underline; }
+    .nav-sep { color: var(--muted); margin: 0 0.4rem; }
+    @media (max-width: 640px) {
+      body { padding: 0.5rem 0.5rem 1rem; }
+      h1 { font-size: 1rem; margin-bottom: 0.25rem; }
+      .sub { font-size: 0.75rem; margin-bottom: 0.5rem; line-height: 1.2; }
+      .controls { margin-top: 0.5rem; margin-bottom: 0.5rem; }
+    }
+    .live-row { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; width: 100%; max-width: 960px; }
+    .viewport, .viewport-debug {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 260px;
+      max-width: 460px;
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      aspect-ratio: 4/3;
+    }
+    .viewport-debug {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .viewport-debug canvas { width: 100%; height: 100%; object-fit: contain; display: block; }
+    #video { display: block; width: 100%; height: 100%; object-fit: contain; }
+    #overlay {
+      position: absolute; inset: 0; pointer-events: none;
+      width: 100%; height: 100%; object-fit: contain;
+    }
+    #canvas { display: none; }
+    .controls { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; justify-content: center; }
+    button {
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 0.6rem 1.2rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    button:hover { background: #25252c; border-color: var(--accent); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    button.primary:hover:not(:disabled) { filter: brightness(1.1); }
+    .status { margin-top: 1rem; font-size: 0.85rem; color: var(--muted); min-height: 1.5em; text-align: center; max-width: 720px; }
+    .status.error { color: var(--error); }
+    .secure-warning {
+      background: var(--surface);
+      border: 1px solid var(--error);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      max-width: 720px;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    .secure-warning strong { color: var(--error); }
+    .markers-line { margin-top: 0.5rem; font-size: 0.85rem; color: var(--muted); min-height: 1.2em; }
+    .markers-line .ids { color: var(--accent); }
+    .footer-by { margin-top: auto; padding: 1rem 0.5rem 0.75rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
+    .footer-by a { color: var(--accent); text-decoration: none; }
+    .footer-by a:hover { text-decoration: underline; }
+    .footer-by img { vertical-align: middle; margin-right: 0.5rem; height: 38px; width: auto; object-fit: contain; }
+    .debug-label { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; color: var(--muted); font-size: 0.85rem; pointer-events: none; }
+    @media (max-width: 640px) {
+      .controls label, .controls button { min-height: 44px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>ArUco 4×4 Web Scanner</h1>
+  <p class="sub">Runs entirely in the browser — no server. 4×4 ArUco (50/250 markers), same codes as OpenCV DICT_4X4_250.</p>
+  <nav class="nav-links">
+    <a href="scanner.html">Scanner</a>
+    <span class="nav-sep">·</span>
+    <a href="generator.html">Pattern generator</a>
+  </nav>
+
+  <div id="secureWarning" class="secure-warning" style="display: none;">
+    <strong>Camera not available</strong><br>
+    <code>getUserMedia</code> only works in a <strong>secure context</strong>: HTTPS or <code>localhost</code>.
+    Open this page via <code>https://aruco.mess.engineering</code> or <code>http://localhost</code> — not <code>file://</code> or plain HTTP.
+  </div>
+
+  <div class="controls">
+    <button id="btnStart" class="primary">Start camera</button>
+    <button id="btnStop" disabled>Stop camera</button>
+    <label title="Enable if IDs are wrong - compensates mirrored webcam.">
+      <input type="checkbox" id="mirrorForDetection"> Mirror image
+    </label>
+    <label>Dictionary: <select id="dictSize"><option value="50" selected>4×4 (50)</option><option value="250">4×4 (250)</option></select></label>
+    <label>ID convention: <select id="dictConvention"><option value="0">Normal</option><option value="1" selected>Byte swap (OpenCV)</option><option value="2">Bit reverse</option><option value="3">Byte + bit</option></select></label>
+    <label>Scanner input: <select id="debugMode"><option value="gray">Gray</option><option value="binary" selected>Binary</option></select></label>
+  </div>
+
+  <div class="live-row">
+    <div class="viewport">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
+      <canvas id="canvas"></canvas>
+    </div>
+    <div class="viewport-debug">
+      <canvas id="debugView"></canvas>
+      <p class="debug-label" id="debugLabel">Scanner input (start camera)</p>
+    </div>
+  </div>
+  <p class="status" style="font-size:0.8rem; color:var(--muted); margin-top:0.5rem;">
+    Left: camera + cyan boxes (ID). Right: what the scanner sees (gray / binary).
+  </p>
+
+  <p class="status" id="status">Load over HTTPS (e.g. aruco.mess.engineering) or localhost, then start the camera.</p>
+  <p class="markers-line" id="markersLine" aria-live="polite"></p>
+
+  <p class="footer-by">
+    <a href="https://mess.engineering" target="_blank" rel="noopener" title="Mattern Engineering &amp; Software Solutions">
+      <img src="https://mess.engineering/favicon/og-image.png" alt="M.E.S.S." width="72" height="38" loading="lazy">
+      Brought to you by M.E.S.S.
+    </a>
+  </p>
+
+  <script src="https://cdn.jsdelivr.net/gh/damianofalcioni/js-aruco2@master/src/cv.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/damianofalcioni/js-aruco2@master/src/aruco.js"></script>
+  <script>
+    (function () {
+      // CI colors (M.E.S.S. – mess.engineering)
+      var CI_LIVE = { r: 0, g: 255, b: 255 };   // Cyan – live camera overlay
+      var CI_CUBOID = { r: 255, g: 0, b: 255 }; // Magenta – binary/gray 3D boxes
+
+      // Built-in 4×4 dictionary (OpenCV DICT_4X4_250, 250 codes)
+      var CODE_LIST_4X4_250 = [0x32b5,0x9a0f,0x2d33,0x4699,0x9e54,0xcd79,0x2e9e,0xf2c4,0xdafe,0x56cf,0x91f9,0xa711,0xb70e,0xf2a,0xb124,0x3e26,0x6546,0x66,0x5e6c,0xaf76,0x8b86,0x2bb0,0xd5cc,0x82dd,0x47fe,0x7194,0xe4ac,0x54a5,0x2321,0x6f34,0x1544,0xb257,0xcf9e,0xcbf0,0xae08,0x2909,0x7518,0xff04,0xf60d,0x5a1c,0x1817,0x282a,0x8c32,0xb238,0xe824,0xeb2e,0x3f2d,0x644b,0x2e50,0x1350,0x9451,0x6855,0x415d,0x975f,0x168,0x6768,0x2461,0xe961,0x126b,0xe56f,0xdf67,0x1b7e,0xa080,0x4483,0xa28b,0x7a93,0x6c84,0x2a85,0x9c85,0x899c,0xa19f,0x7cbb,0x4bc,0x5bb6,0xc8bf,0xabb7,0x1fca,0x62c9,0x58d9,0xd5d3,0x98cc,0xa0c7,0x37c5,0x5de9,0x25f9,0xbbfb,0x2aee,0x4df7,0x7535,0xad8a,0x1776,0xcf0a,0x4b06,0xc12d,0xd849,0xf443,0x364f,0xd34f,0xe469,0xc770,0x6e7a,0xeab4,0x4fed,0xe7fc,0xa6fe,0x2500,0x4300,0x880a,0x860a,0x6f02,0x1c00,0x9700,0x3708,0x310a,0xc609,0x10b,0xfb09,0x580b,0x8210,0x2d18,0x7810,0x7310,0x7412,0xb112,0xf91a,0x613,0xe0c,0xf10c,0x3304,0x9f0c,0xf20e,0xfd0e,0x4c07,0xa40f,0x2f07,0xb505,0x910f,0xdb07,0xe41e,0x3914,0x801d,0xc815,0x8b1f,0xba15,0xb11d,0x8020,0xe928,0xa222,0x5328,0xf02a,0xf722,0x4029,0x4621,0xb929,0x9c2b,0xb22b,0xca38,0x2e38,0x730,0xe738,0x493a,0x653a,0x5d32,0x883b,0x1d39,0xd33b,0x4726,0x8027,0xaa2f,0x142d,0xde25,0x5325,0x772f,0x4834,0xa83c,0x413c,0xd34,0xfb34,0x9a36,0xe03d,0x6a35,0x93d,0xed3d,0xc43f,0x6c3f,0xce37,0x5c3d,0x763d,0xb037,0x173f,0xff3f,0xe548,0x6842,0x2d4a,0x6041,0x5149,0xdd41,0xdf4b,0x4f58,0x485a,0x1658,0x5d50,0xfa5a,0xb55a,0x2351,0x8a5b,0x1959,0x3551,0x694c,0xc146,0xb4e,0x5f44,0x594e,0x834d,0x7d4d,0xd847,0x7347,0x855c,0x445e,0x2b56,0xbb5c,0xc355,0x6e5f,0xeb5f,0x125d,0x5e55,0x7062,0x1562,0xc261,0x206b,0x4563,0x5c6b,0x5b6b,0xc78,0xcf7a,0x7f78,0x8079,0xe571,0x7471,0xb679,0xd371,0x337b,0x6a64,0xa866,0xa76e,0x916e,0x2265,0xcb6d,0x8d67,0x316d];
+      var raw4x4_1000 = null;
+
+      function reverseBits16(x) {
+        var out = 0;
+        for (var i = 0; i < 16; i++) { out = (out << 1) | (x & 1); x >>>= 1; }
+        return out >>> 0;
+      }
+
+      function buildCodeList(size, convention) {
+        var raw = raw4x4_1000;
+        var n = Math.min(size, raw ? raw.length : 250);
+        var list = [];
+        var fallback = raw ? null : CODE_LIST_4X4_250;
+        for (var i = 0; i < n; i++) {
+          var code;
+          if (raw) {
+            var b0 = raw[i][0], b1 = raw[i][1];
+            if (convention === 1 || convention === 3) code = (b1 | (b0 << 8)) >>> 0;
+            else code = (b0 | (b1 << 8)) >>> 0;
+            if (convention === 2 || convention === 3) code = reverseBits16(code);
+          } else {
+            code = fallback[i];
+            if (convention === 1 || convention === 3) code = ((code & 0xff) << 8) | (code >>> 8);
+            if (convention === 2 || convention === 3) code = reverseBits16(code);
+          }
+          list.push(code);
+        }
+        return list;
+      }
+
+      function applyDictionary() {
+        if (typeof AR === 'undefined' || !AR.DICTIONARIES) return;
+        var size = parseInt(document.getElementById('dictSize').value, 10) || 250;
+        var convention = parseInt(document.getElementById('dictConvention').value, 10) || 0;
+        var codeList = buildCodeList(size, convention);
+        AR.DICTIONARIES['DICT_4X4'] = { nBits: 16, tau: 3, codeList: codeList };
+      }
+
+      applyDictionary();
+
+      var video = document.getElementById('video');
+      var overlay = document.getElementById('overlay');
+      var canvas = document.getElementById('canvas');
+      var btnStart = document.getElementById('btnStart');
+      var btnStop = document.getElementById('btnStop');
+      var mirrorForDetection = document.getElementById('mirrorForDetection');
+      var dictSize = document.getElementById('dictSize');
+      var dictConvention = document.getElementById('dictConvention');
+      var debugMode = document.getElementById('debugMode');
+      var statusEl = document.getElementById('status');
+      var markersLine = document.getElementById('markersLine');
+      var secureWarning = document.getElementById('secureWarning');
+      var lastMarkerIds = '';
+
+      var stream = null;
+      var detector = null;
+      var animationId = null;
+
+      function setStatus(msg, isError) {
+        statusEl.textContent = msg || '';
+        statusEl.classList.toggle('error', !!isError);
+      }
+
+      function hasCameraSupport() {
+        return typeof navigator !== 'undefined' && navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function';
+      }
+
+      function drawOverlay(markers) {
+        var w = overlay.width;
+        var h = overlay.height;
+        var ctx = overlay.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+        if (!markers || markers.length === 0) return;
+        ctx.lineWidth = 3;
+        ctx.font = 'bold 18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        for (var i = 0; i < markers.length; i++) {
+          var c = markers[i].corners;
+          if (!c || c.length < 4) continue;
+          ctx.strokeStyle = 'rgb(' + CI_LIVE.r + ',' + CI_LIVE.g + ',' + CI_LIVE.b + ')';
+          ctx.beginPath();
+          ctx.moveTo(c[0].x, c[0].y);
+          for (var j = 1; j < c.length; j++) ctx.lineTo(c[j].x, c[j].y);
+          ctx.closePath();
+          ctx.stroke();
+          var cx = (c[0].x + c[1].x + c[2].x + c[3].x) / 4;
+          var cy = (c[0].y + c[1].y + c[2].y + c[3].y) / 4;
+          var label = String(Number(markers[i].id));
+          var metrics = ctx.measureText(label);
+          var pad = 4;
+          ctx.fillStyle = 'rgba(0,0,0,0.75)';
+          ctx.fillRect(cx - metrics.width / 2 - pad, cy - 10, metrics.width + pad * 2, 20);
+          ctx.fillStyle = 'rgb(' + CI_LIVE.r + ',' + CI_LIVE.g + ',' + CI_LIVE.b + ')';
+          ctx.fillText(label, cx, cy);
+        }
+      }
+
+      function drawDebugView(imageData, mode, markers) {
+        var debugView = document.getElementById('debugView');
+        var debugLabel = document.getElementById('debugLabel');
+        if (!imageData || !debugView) return;
+        var w = imageData.width;
+        var h = imageData.height;
+        var data = imageData.data;
+        debugView.width = w;
+        debugView.height = h;
+        var ctx = debugView.getContext('2d');
+        var out = ctx.createImageData(w, h);
+        var outData = out.data;
+        for (var i = 0; i < w * h; i++) {
+          var r = data[i * 4];
+          var g = data[i * 4 + 1];
+          var b = data[i * 4 + 2];
+          var gray = (r + g + b) / 3;
+          if (mode === 'binary') {
+            var v = Math.round((gray > 128 ? 200 : 35) * 0.66);
+            outData[i * 4] = outData[i * 4 + 1] = outData[i * 4 + 2] = v;
+          } else {
+            outData[i * 4] = outData[i * 4 + 1] = outData[i * 4 + 2] = gray;
+          }
+          outData[i * 4 + 3] = 255;
+        }
+        if (mode === 'gray') {
+          for (var y = 1; y < h - 1; y++) {
+            for (var x = 1; x < w - 1; x++) {
+              var i = (y * w + x) * 4;
+              var g = outData[i];
+              var gL = outData[((y) * w + (x - 1)) * 4];
+              var gR = outData[((y) * w + (x + 1)) * 4];
+              var gT = outData[((y - 1) * w + x) * 4];
+              var gB = outData[((y + 1) * w + x) * 4];
+              var mag = Math.min(80, Math.abs(gR - gL) + Math.abs(gB - gT));
+              outData[i] = Math.min(255, outData[i] + mag * 0.6);
+              outData[i + 1] = Math.min(255, outData[i + 1] + mag * 0.5);
+              outData[i + 2] = Math.min(255, outData[i + 2] + mag * 0.4);
+            }
+          }
+        }
+        ctx.putImageData(out, 0, 0);
+        debugLabel.style.display = 'none';
+        if (markers && markers.length > 0) {
+          drawPseudo3DBoxes(ctx, markers, w, h, mode);
+        }
+      }
+
+      function drawPseudo3DBoxes(ctx, markers, imgW, imgH, mode) {
+        var r = CI_CUBOID.r, g = CI_CUBOID.g, b = CI_CUBOID.b;
+        var dirX = 0.15, dirY = 0.15;
+        var isBinary = mode === 'binary';
+        ctx.lineWidth = isBinary ? 5 : 3;
+        ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',1)';
+        var fillFront = 'rgba(' + r + ',' + g + ',' + b + ',' + (isBinary ? 0.35 : 0.3) + ')';
+        var fillSide = 'rgba(' + r + ',' + g + ',' + b + ',' + (isBinary ? 0.2 : 0.15) + ')';
+        var fillBack = 'rgba(' + r + ',' + g + ',' + b + ',' + (isBinary ? 0.12 : 0.1) + ')';
+        for (var i = 0; i < markers.length; i++) {
+          var c = markers[i].corners;
+          if (!c || c.length < 4) continue;
+          var edgeLen = 0;
+          for (var k = 0; k < 4; k++) {
+            var n = (k + 1) % 4;
+            edgeLen += Math.sqrt((c[n].x - c[k].x) * (c[n].x - c[k].x) + (c[n].y - c[k].y) * (c[n].y - c[k].y));
+          }
+          edgeLen /= 4;
+          var depth = edgeLen;
+          var shiftX = depth * dirX;
+          var shiftY = depth * dirY;
+          var back = [
+            { x: c[0].x + shiftX, y: c[0].y + shiftY },
+            { x: c[1].x + shiftX, y: c[1].y + shiftY },
+            { x: c[2].x + shiftX, y: c[2].y + shiftY },
+            { x: c[3].x + shiftX, y: c[3].y + shiftY }
+          ];
+          for (var j = 0; j < 4; j++) {
+            var n = (j + 1) % 4;
+            ctx.fillStyle = fillSide;
+            ctx.beginPath();
+            ctx.moveTo(c[j].x, c[j].y);
+            ctx.lineTo(c[n].x, c[n].y);
+            ctx.lineTo(back[n].x, back[n].y);
+            ctx.lineTo(back[j].x, back[j].y);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.fillStyle = fillBack;
+          ctx.beginPath();
+          ctx.moveTo(back[0].x, back[0].y);
+          for (var j = 1; j < 4; j++) ctx.lineTo(back[j].x, back[j].y);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = fillFront;
+          ctx.beginPath();
+          ctx.moveTo(c[0].x, c[0].y);
+          for (var j = 1; j < 4; j++) ctx.lineTo(c[j].x, c[j].y);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',1)';
+          ctx.beginPath();
+          ctx.moveTo(back[0].x, back[0].y);
+          for (var j = 1; j < 4; j++) ctx.lineTo(back[j].x, back[j].y);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(c[0].x, c[0].y);
+          for (var j = 1; j < 4; j++) ctx.lineTo(c[j].x, c[j].y);
+          ctx.closePath();
+          ctx.stroke();
+          for (var j = 0; j < 4; j++) {
+            ctx.beginPath();
+            ctx.moveTo(c[j].x, c[j].y);
+            ctx.lineTo(back[j].x, back[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      function updateMarkersList(markers) {
+        if (!markersLine) return;
+        if (markers === null) {
+          markersLine.innerHTML = '';
+          lastMarkerIds = '';
+          return;
+        }
+        var ids = (markers && markers.length) ? markers.map(function(m) { return m.id; }).sort(function(a,b){ return a - b; }).join(', ') : '';
+        if (ids === lastMarkerIds) return;
+        lastMarkerIds = ids;
+        markersLine.innerHTML = ids ? 'Detected: <span class="ids">' + ids + '</span>' : '';
+      }
+
+      var tickSkip = 0;
+      function isSmallScreen() { return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 768px)').matches; }
+
+      function tick() {
+        animationId = requestAnimationFrame(tick);
+        if (!stream || !detector || video.readyState < 2) return;
+        tickSkip++;
+        if (isSmallScreen() && tickSkip % 2 !== 0) return;
+        var w = video.videoWidth;
+        var h = video.videoHeight;
+        if (w === 0 || h === 0) return;
+        canvas.width = w;
+        canvas.height = h;
+        overlay.width = w;
+        overlay.height = h;
+        var ctx = canvas.getContext('2d');
+        if (mirrorForDetection && mirrorForDetection.checked) {
+          ctx.save();
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, -w, 0, w, h);
+          ctx.restore();
+        } else {
+          ctx.drawImage(video, 0, 0, w, h);
+        }
+        var imageData = ctx.getImageData(0, 0, w, h);
+        var markers = detector.detect(imageData);
+        var mirror = mirrorForDetection && mirrorForDetection.checked;
+        video.style.transform = mirror ? 'scaleX(-1)' : '';
+        drawOverlay(markers);
+        drawDebugView(imageData, debugMode ? debugMode.value : 'gray', markers);
+        updateMarkersList(markers);
+        if (markers.length > 0) setStatus('Found ' + markers.length + ' marker(s).');
+      }
+
+      function startCamera() {
+        if (!hasCameraSupport()) {
+          secureWarning.style.display = 'block';
+          setStatus('Camera API not available. Use HTTPS (e.g. aruco.mess.engineering) or localhost.', true);
+          return;
+        }
+        secureWarning.style.display = 'none';
+        setStatus('Requesting camera…');
+        var wantSmall = typeof window !== 'undefined' && window.innerWidth <= 768;
+        navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: wantSmall ? { ideal: 640, max: 640 } : { ideal: 1280 },
+            height: wantSmall ? { ideal: 480, max: 480 } : { ideal: 720 }
+          },
+          audio: false
+        })
+          .then(function(s) {
+            stream = s;
+            video.srcObject = stream;
+            btnStart.disabled = true;
+            btnStop.disabled = false;
+            if (typeof AR !== 'undefined') {
+              applyDictionary();
+              detector = new AR.Detector({ dictionaryName: 'DICT_4X4' });
+              setStatus('Camera on. Scanning 4×4 ArUco…');
+              tick();
+            } else {
+              setStatus('ArUco library not loaded.', true);
+            }
+          })
+          .catch(function(err) {
+            setStatus('Camera error: ' + (err.message || err.name), true);
+          });
+      }
+
+      function stopCamera() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        if (stream) {
+          stream.getTracks().forEach(function(t) { t.stop(); });
+          stream = null;
+        }
+        video.srcObject = null;
+        btnStart.disabled = false;
+        btnStop.disabled = true;
+        drawOverlay([]);
+        updateMarkersList(null);
+        var dl = document.getElementById('debugLabel');
+        if (dl) dl.style.display = '';
+        var dv = document.getElementById('debugView');
+        if (dv && dv.getContext) { var c = dv.getContext('2d'); c.clearRect(0, 0, dv.width, dv.height); }
+        setStatus('Camera off. Start again to scan.');
+      }
+
+      if (!hasCameraSupport()) {
+        secureWarning.style.display = 'block';
+        setStatus('Camera requires HTTPS (e.g. aruco.mess.engineering) or localhost.', true);
+      }
+
+      function refreshDetector() {
+        applyDictionary();
+        if (detector) detector = new AR.Detector({ dictionaryName: 'DICT_4X4' });
+      }
+
+      btnStart.addEventListener('click', startCamera);
+      btnStop.addEventListener('click', stopCamera);
+      dictSize.addEventListener('change', refreshDetector);
+      dictConvention.addEventListener('change', refreshDetector);
+    })();
+  </script>
+</body>
+</html>
