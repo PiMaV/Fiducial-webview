@@ -117,7 +117,7 @@
   <div id="secureWarning" class="secure-warning" style="display: none;">
     <strong>Camera not available</strong><br>
     <code>getUserMedia</code> only works in a <strong>secure context</strong>: HTTPS or <code>localhost</code>.
-    Open this page via <code>https://aruco.mess.engineering</code> or <code>http://localhost</code> — not <code>file://</code> or plain HTTP.
+    Open this page via <code>https://fiducials.mess.engineering</code> or <code>http://localhost</code> — not <code>file://</code> or plain HTTP.
   </div>
 
   <div class="controls">
@@ -555,7 +555,7 @@
       function startCamera() {
         if (!hasCameraSupport()) {
           secureWarning.style.display = 'block';
-          setStatus('Camera API not available. Use HTTPS (e.g. aruco.mess.engineering) or localhost.', true);
+          setStatus('Camera API not available. Use HTTPS (e.g. fiducials.mess.engineering) or localhost.', true);
           return;
         }
         secureWarning.style.display = 'none';
@@ -632,7 +632,7 @@
 
       if (!hasCameraSupport()) {
         secureWarning.style.display = 'block';
-        setStatus('Camera requires HTTPS (e.g. aruco.mess.engineering) or localhost.', true);
+        setStatus('Camera requires HTTPS (e.g. fiducials.mess.engineering) or localhost.', true);
       }
 
       function refreshDetector() {
