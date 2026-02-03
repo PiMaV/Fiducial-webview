@@ -93,7 +93,7 @@
     <div class="controls">
       <label>Type: <select id="markerType"><option value="aruco" selected>ArUco 4×4</option><option value="apriltag">AprilTag 36h11</option></select></label>
       <span id="fakePatternWrap">
-        <label title="Fill empty cells: ArUco = ID 250+, AprilTag = fake markers">
+        <label title="Fill empty cells: ArUco = ID 251+, AprilTag = fake markers">
           <input type="checkbox" id="fillGrid" checked> Fill grid
         </label>
       </span>
@@ -105,9 +105,11 @@
 
   <section>
     <h2>Layout: Klick = Filled / Empty</h2>
-    <p class="marker-type-note" id="layoutNote">ArUco: Filled = ID 1–249. Empty = Fill grid (250+) or blank. Use scanner 4×4 (1000) + Byte swap (OpenCV).</p>
+    <p class="marker-type-note" id="layoutNote">ArUco: Filled = ID 1–250. Empty = Fill grid (251+) or blank. Use scanner 4×4 (1000) + Byte swap (OpenCV).</p>
     <div class="controls">
+      <label>Grid: <input type="number" id="gridRows" value="11" min="3" max="25" title="Rows"> × <input type="number" id="gridCols" value="11" min="3" max="25" title="Columns"></label>
       <button type="button" id="btnSmiley" class="primary">Smiley preset</button>
+      <button type="button" id="btnLogo">LOGO</button>
       <button type="button" id="btnClear">Clear</button>
     </div>
     <div class="grid-wrap" id="gridWrap"></div>
@@ -144,6 +146,27 @@
       var APRILTAG_BIT_Y = [1,1,1,1,1,2,2,2,3,1,2,3,4,5,2,3,4,3,6,6,6,6,6,5,5,5,4,6,5,4,3,2,5,4,3,4];
 
       var ROWS = 11, COLS = 11;
+
+      function resizeGrid(newRows, newCols) {
+        newRows = Math.max(3, Math.min(25, parseInt(newRows, 10) || 11));
+        newCols = Math.max(3, Math.min(25, parseInt(newCols, 10) || 11));
+        var newGrid = [];
+        for (var r = 0; r < newRows; r++) {
+          newGrid[r] = [];
+          for (var c = 0; c < newCols; c++) {
+            newGrid[r][c] = (r < grid.length && c < (grid[r] && grid[r].length)) ? grid[r][c] : 0;
+          }
+        }
+        grid = newGrid;
+        ROWS = newRows;
+        COLS = newCols;
+        var ri = document.getElementById('gridRows'), ci = document.getElementById('gridCols');
+        if (ri) ri.value = ROWS;
+        if (ci) ci.value = COLS;
+        renderGrid();
+        generate();
+      }
+
       var SMILEY = [
         [0,0,0,0,0,0,0,0,0,0,0],
         [0,1,1,1,0,0,0,1,1,1,0],
@@ -157,6 +180,26 @@
         [0,0,0,1,1,1,1,1,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0]
       ];
+
+      // MESS logo: 15×15, center cross (row 7, col 7), 7×7 per quadrant = 1 Rand + 5×5 Buchstabe + 1 Rand
+      var M_5 = [[1,0,0,0,1],[1,1,0,1,1],[1,0,1,0,1],[1,0,0,0,1],[1,0,0,0,1]];
+      var E_5 = [[1,1,1,1,1],[1,0,0,0,0],[1,1,1,1,0],[1,0,0,0,0],[1,1,1,1,1]];
+      var S_5 = [[0,1,1,1,1],[1,0,0,0,0],[0,1,1,1,0],[0,0,0,0,1],[1,1,1,1,0]];
+      var MESS_LOGO = (function () {
+        var g = [];
+        for (var r = 0; r < 15; r++) {
+          g[r] = [];
+          for (var c = 0; c < 15; c++) {
+            if (r === 7 || c === 7) { g[r][c] = 1; continue; }
+            if (r <= 6 && c <= 6) g[r][c] = (r >= 1 && r <= 5 && c >= 1 && c <= 5) ? M_5[r - 1][c - 1] : 0;
+            else if (r <= 6 && c >= 8) g[r][c] = (r >= 1 && r <= 5 && c >= 9 && c <= 13) ? E_5[r - 1][c - 9] : 0;
+            else if (r >= 8 && c <= 6) g[r][c] = (r >= 9 && r <= 13 && c >= 1 && c <= 5) ? S_5[r - 9][c - 1] : 0;
+            else if (r >= 8 && c >= 8) g[r][c] = (r >= 9 && r <= 13 && c >= 9 && c <= 13) ? S_5[r - 9][c - 9] : 0;
+            else g[r][c] = 0;
+          }
+        }
+        return g;
+      })();
 
       // ArUco 4x4: 6x6 cells, 1 black border, 4x4 data. Byte-swapped code, MSB top-left, inner matrix inverted (1=white, 0=black) — matches js-aruco2 + scanner "Byte swap (OpenCV)".
       function drawMarker(ctx, code, x, y, cellPx) {
@@ -234,9 +277,9 @@
         for (var c = 0; c < COLS; c++) grid[r][c] = 0;
       }
 
-      // ArUco: fixed numbering. Filled = 1–249, Empty = 250+ (dict-independent; always use DICT_4X4_1000 for drawing).
-      var ARUCO_FILLED_MAX = 249;
-      var ARUCO_EMPTY_START = 250;
+      // ArUco: fixed numbering. Filled = 1–250, Empty = 251+ (dict-independent; always use DICT_4X4_1000 for drawing).
+      var ARUCO_FILLED_MAX = 250;
+      var ARUCO_EMPTY_START = 251;
       var ARUCO_EMPTY_COUNT = 750;
       function getIdMap() {
         var idxLow = 0, idxHigh = 0;
@@ -298,12 +341,24 @@
         renderGrid();
       }
 
-      document.getElementById('btnSmiley').addEventListener('click', function () { applyPreset(SMILEY); generate(); });
+      document.getElementById('btnSmiley').addEventListener('click', function () {
+        resizeGrid(11, 11);
+        applyPreset(SMILEY);
+        generate();
+      });
+      document.getElementById('btnLogo').addEventListener('click', function () {
+        resizeGrid(15, 15);
+        applyPreset(MESS_LOGO);
+        generate();
+      });
       document.getElementById('btnClear').addEventListener('click', function () {
         for (var r = 0; r < ROWS; r++) for (var c = 0; c < COLS; c++) grid[r][c] = 0;
         renderGrid();
         generate();
       });
+      var gridRowsEl = document.getElementById('gridRows'), gridColsEl = document.getElementById('gridCols');
+      if (gridRowsEl) gridRowsEl.addEventListener('change', function () { resizeGrid(this.value, gridColsEl ? gridColsEl.value : COLS); });
+      if (gridColsEl) gridColsEl.addEventListener('change', function () { resizeGrid(gridRowsEl ? gridRowsEl.value : ROWS, this.value); });
 
       var markerTypeEl = document.getElementById('markerType');
       var apriltagInfoEl = document.getElementById('apriltagInfo');
@@ -313,7 +368,7 @@
         if (apriltagInfoEl) apriltagInfoEl.style.display = isApril ? 'block' : 'none';
         if (generateSectionEl) generateSectionEl.style.display = 'block';
         var note = document.getElementById('layoutNote');
-        if (note) note.textContent = isApril ? "AprilTag: Filled = ID 0–586. Empty = Fill grid (fake) or blank." : "ArUco: Filled = ID 1–249. Empty = Fill grid (250+) or blank. Use scanner 4×4 (1000) + Byte swap (OpenCV).";
+        if (note) note.textContent = isApril ? "AprilTag: Filled = ID 0–586. Empty = Fill grid (fake) or blank." : "ArUco: Filled = ID 1–250. Empty = Fill grid (251+) or blank. Use scanner 4×4 (1000) + Byte swap (OpenCV).";
         renderGrid();
         generate();
       }
