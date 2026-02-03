@@ -2,7 +2,7 @@
 
 HTML-based ArUco and AprilTag scanner and pattern generator. Runs in the browser, no server. Works on GitHub Pages and any static host.
 
-**Live:** [https://aruco.mess.engineering](https://aruco.mess.engineering)
+**Live:** [https://fiducials.mess.engineering](https://fiducials.mess.engineering)
 
 ## What it does
 

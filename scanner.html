@@ -99,7 +99,6 @@
     .footer-by { margin-top: auto; padding: 1rem 0.5rem 0.75rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
     .footer-by a { color: var(--accent); text-decoration: none; }
     .footer-by a:hover { text-decoration: underline; }
-    .footer-by img { vertical-align: middle; margin-right: 0.5rem; height: 38px; width: auto; object-fit: contain; }
     .debug-label { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; color: var(--muted); font-size: 0.85rem; pointer-events: none; }
     @media (max-width: 640px) {
       .controls label, .controls button { min-height: 44px; }
@@ -129,7 +128,7 @@
       <input type="checkbox" id="mirrorForDetection"> Mirror image
     </label>
     <span id="arucoOpts">
-      <label>Dictionary: <select id="dictSize"><option value="50">4×4 (50)</option><option value="250">4×4 (250)</option><option value="1000" selected>4×4 (1000)</option></select></label>
+      <label>Dictionary: <select id="dictSize"><option value="50" selected>4×4 (50)</option><option value="250">4×4 (250)</option><option value="1000">4×4 (1000)</option></select></label>
       <label>ID convention: <select id="dictConvention"><option value="0">Normal</option><option value="1" selected>Byte swap (OpenCV)</option><option value="2">Bit reverse</option><option value="3">Byte + bit</option></select></label>
     </span>
     <label>Scanner input: <select id="debugMode"><option value="gray">Gray</option><option value="binary" selected>Binary</option></select></label>
@@ -150,15 +149,10 @@
     Left: camera + cyan boxes (ID). Right: what the scanner sees (gray / binary).
   </p>
 
-  <p class="status" id="status">Load over HTTPS or localhost, then start the camera. You can switch ArUco ↔ AprilTag while the camera is on. If it gets slow after long use, refresh the page. AprilTag = tag36h11 (<a href="https://github.com/arenaxr/apriltag-gen" target="_blank" rel="noopener" style="color: var(--accent);">tags</a>, <a href="https://github.com/rossng/apriltag-mobile" target="_blank" rel="noopener" style="color: var(--accent);">rossng/apriltag-mobile</a>).</p>
+  <p class="status" id="status">Load over HTTPS or localhost, then start the camera. You can switch ArUco ↔ AprilTag while the camera is on. If it gets slow after long use, refresh the page.</p>
   <p class="markers-line" id="markersLine" aria-live="polite"></p>
 
-  <p class="footer-by">
-    <a href="https://mess.engineering" target="_blank" rel="noopener" title="Mattern Engineering &amp; Software Solutions">
-      <img src="https://mess.engineering/favicon/og-image.png" alt="M.E.S.S." width="72" height="38" loading="lazy">
-      Brought to you by M.E.S.S.
-    </a>
-  </p>
+  <p class="footer-by"><a href="https://mess.engineering" target="_blank" rel="noopener" title="Mattern Engineering &amp; Software Solutions">M.E.S.S.</a></p>
 
   <script src="https://cdn.jsdelivr.net/gh/damianofalcioni/js-aruco2@master/src/cv.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/damianofalcioni/js-aruco2@master/src/aruco.js"></script>

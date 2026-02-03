@@ -25,34 +25,88 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 1rem;
+      padding: 1.5rem 1rem;
     }
-    h1 { font-size: clamp(1.2rem, 4vw, 1.5rem); color: var(--accent); margin: 0 0 0.5rem 0; }
-    .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
-    .links { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    h1 { font-size: clamp(1.5rem, 5vw, 2rem); color: var(--accent); margin: 0 0 0.5rem 0; }
+    .sub { font-size: 0.95rem; color: var(--muted); margin-bottom: 2.5rem; max-width: 28rem; }
+    .links { display: flex; flex-wrap: wrap; gap: 1.25rem; justify-content: center; }
     .links a {
       display: inline-block;
-      padding: 0.75rem 1.5rem;
+      padding: 1rem 2rem;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       background: var(--surface);
       color: var(--accent);
       text-decoration: none;
-      font-size: 1rem;
+      font-size: 1.1rem;
       transition: background 0.2s, border-color 0.2s;
     }
     .links a:hover { background: #25252c; border-color: var(--accent); }
     .links a.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
     .links a.primary:hover { filter: brightness(1.1); }
+    .mini-guide {
+      margin-top: 1.5rem;
+      padding: 0.75rem 1rem;
+      max-width: 26rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.45;
+    }
+    .credits {
+      margin-top: auto;
+      padding: 0.75rem 1rem;
+      max-width: 30rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      text-align: left;
+    }
+    .credits h2 { font-size: 0.8rem; color: var(--accent); margin: 0 0 0.35rem 0; }
+    .credits ul { margin: 0 0 0.5rem 0; padding-left: 1rem; }
+    .credits li { margin-bottom: 0.15rem; }
+    .credits a { color: var(--accent); text-decoration: none; }
+    .credits a:hover { text-decoration: underline; }
+    .credits .refs { margin-top: 0.5rem; }
+    .footer-by { margin-top: 0.75rem; padding-bottom: 0.5rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
+    .footer-by a { color: var(--accent); text-decoration: none; }
+    .footer-by a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <h1>ArUco &amp; AprilTag</h1>
-  <p class="sub">Scanner and pattern generator — ArUco 4×4 and AprilTag 36h11, runs in the browser.</p>
-  <nav class="links">
-    <a href="scanner.html" class="primary">Scanner (camera)</a>
-    <a href="generator.html">Pattern generator</a>
-  </nav>
+  <div class="hero">
+    <h1>ArUco &amp; AprilTag</h1>
+    <p class="sub">Scanner and pattern generator — ArUco 4×4 and AprilTag 36h11, runs in the browser.</p>
+    <nav class="links">
+      <a href="scanner.html" class="primary">Scanner (camera)</a>
+      <a href="generator.html">Pattern generator</a>
+    </nav>
+    <p class="mini-guide">Use PC + phone for a bit of fun: show a pattern on one device, open the scanner on the other and point the camera at it — instant mini AR game.</p>
+  </div>
+
+  <section class="credits" id="credits">
+    <h2>Powered by (used in this app)</h2>
+    <ul>
+      <li><a href="https://github.com/damianofalcioni/js-aruco2" target="_blank" rel="noopener">js-aruco2</a> (Damiano Falcioni) — ArUco detection in the browser (delivered via jsDelivr).</li>
+      <li><a href="https://github.com/arenaxr/apriltag-js-standalone" target="_blank" rel="noopener">apriltag-js-standalone</a> (ARENA) — AprilTag 36h11 detection (WASM, loaded from arenaxr.github.io).</li>
+    </ul>
+    <h2 class="refs">References (docs / related projects, not loaded)</h2>
+    <ul>
+      <li><a href="https://github.com/AprilRobotics/apriltag-generation" target="_blank" rel="noopener">AprilRobotics/apriltag-generation</a> — AprilTag 36h11 layout (Java).</li>
+      <li><a href="https://github.com/arenaxr/apriltag-gen" target="_blank" rel="noopener">arenaxr/apriltag-gen</a> — AprilTag tag generation.</li>
+      <li><a href="https://github.com/rossng/apriltag-mobile" target="_blank" rel="noopener">rossng/apriltag-mobile</a> — AprilTag mobile.</li>
+    </ul>
+  </section>
+
+  <p class="footer-by"><a href="https://mess.engineering" target="_blank" rel="noopener" title="Mattern Engineering &amp; Software Solutions">M.E.S.S.</a></p>
 </body>
 </html>
