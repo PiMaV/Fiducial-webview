@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ArUco &amp; AprilTag Pattern Generator</title>
+  <title>AprilTag &amp; ArUco Pattern Generator</title>
   <link rel="icon" href="https://mess.engineering/favicon/favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="https://mess.engineering/favicon/apple-touch-icon.png">
   <style>
@@ -22,11 +22,14 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 1rem;
     }
     h1 { font-size: clamp(1.1rem, 3vw, 1.4rem); color: var(--accent); margin: 0 0 0.5rem 0; }
-    .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.35rem; }
-    .nav-links { font-size: 0.9rem; margin-bottom: 1rem; }
+    .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.0rem; }
+    .nav-links { font-size: 1.1rem; margin-bottom: 1.5rem; }
     .nav-links a { color: var(--accent); text-decoration: none; }
     .nav-links a:hover { text-decoration: underline; }
     .nav-sep { color: var(--muted); margin: 0 0.4rem; }
@@ -71,17 +74,19 @@
     input[type="number"] { width: 4rem; margin-left: 0.25rem; padding: 0.35rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); }
     #outCanvas { display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
     .preview-wrap { margin-top: 1rem; }
-    .footer-by { margin-top: 2rem; font-size: 0.8rem; color: var(--muted); }
+    .footer-by { margin-top: 0.75rem; padding-bottom: 0.5rem; font-size: 1.2rem; color: var(--muted); text-align: center; }
+    .footer-by a { color: var(--accent); text-decoration: none; }
+    .footer-by a:hover { text-decoration: underline; }
     .grid-cell.filled { background: var(--accent); }
     .marker-type-note { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
     .marker-type-note a { color: var(--accent); }
-    .apriltag-info { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 0.5rem; font-size: 0.9rem; color: var(--text); }
-    .apriltag-info a { color: var(--accent); }
+    .marker-type-info { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 0.5rem; font-size: 0.9rem; color: var(--text); }
+    .marker-type-info a { color: var(--accent); }
   </style>
 </head>
 <body>
-  <h1>ArUco &amp; AprilTag Pattern Generator</h1>
-  <p class="sub">Build a layout, generate PNG. ArUco 4×4 (DICT_4X4_1000) or AprilTag 36h11 (see note).</p>
+  <h1>AprilTag &amp; ArUco Pattern Generator</h1>
+  <p class="sub">Build a layout, generate PNG. AprilTag 36h11 or ArUco 4x4 (DICT_4X4_1000).</p>
   <nav class="nav-links">
     <a href="scanner.html">← Scanner</a>
     <span class="nav-sep">·</span>
@@ -98,17 +103,16 @@
         </label>
       </span>
     </div>
-    <div id="apriltagInfo" class="apriltag-info" style="display: none;">
-      AprilTag 36h11 (587 IDs). Filled = real tags (ID 0–586). Empty = fill with fake markers or leave blank (Fill grid).
-    </div>
+    <div id="markerTypeInfo" class="marker-type-info"></div>
   </section>
 
   <section>
     <h2>Layout: Klick = Filled / Empty</h2>
-    <p class="marker-type-note" id="layoutNote">ArUco: Filled = ID 1–250. Empty = Fill grid (251+) or blank. Use scanner 4×4 (1000) + Byte swap (OpenCV).</p>
     <div class="controls">
-      <label>Grid: <input type="number" id="gridRows" value="11" min="3" max="25" title="Rows"> × <input type="number" id="gridCols" value="11" min="3" max="25" title="Columns"></label>
-      <button type="button" id="btnSmiley" class="primary">Smiley preset</button>
+      <label>Grid: <input type="number" id="gridRows" value="7" min="3" max="25" title="Rows"> × <input type="number" id="gridCols" value="7" min="3" max="25" title="Columns"></label>
+      <button type="button" id="btnSmileySmall">Smiley small</button>
+      <button type="button" id="btnSmileyLarge">Smiley large</button>
+      <button type="button" id="btn5x5">5x5</button>
       <button type="button" id="btnLogo">LOGO</button>
       <button type="button" id="btnClear">Clear</button>
     </div>
@@ -118,8 +122,8 @@
   <section>
     <h2>Options</h2>
     <div class="controls">
-      <label>Marker size (px): <input type="number" id="markerPx" value="60" min="20" max="200"></label>
-      <label>Quiet zone between markers (px): <input type="number" id="paddingPx" value="14" min="2" max="60"></label>
+      <label>Marker size (px): <input type="number" id="markerPx" value="100" min="20" max="200"></label>
+      <label>Quiet zone (px): <input type="number" id="paddingPx" value="19" min="2" max="60" title="qz = 1.5×(marker_size/8) when marker size changes"></label>
     </div>
   </section>
 
@@ -133,7 +137,8 @@
     </div>
   </section>
 
-  <p class="footer-by"><a href="https://mess.engineering" target="_blank" rel="noopener">M.E.S.S.</a></p>
+  <!-- <p class="footer-by"><a href="https://mess.engineering" target="_blank" rel="noopener">M.E.S.S.</a></p> -->
+  <p class="footer-by"><a href="https://mess.engineering" target="_blank" rel="noopener" title="Mattern Engineering &amp; Software Solutions">M.E.S.S.</a></p>
 
   <script>
     (function () {
@@ -145,7 +150,7 @@
       var APRILTAG_BIT_X = [1,2,3,4,5,2,3,4,3,6,6,6,6,6,5,5,5,4,6,5,4,3,2,5,4,3,4,1,1,1,1,1,2,2,2,3];
       var APRILTAG_BIT_Y = [1,1,1,1,1,2,2,2,3,1,2,3,4,5,2,3,4,3,6,6,6,6,6,5,5,5,4,6,5,4,3,2,5,4,3,4];
 
-      var ROWS = 11, COLS = 11;
+      var ROWS = 7, COLS = 7;
 
       function resizeGrid(newRows, newCols) {
         newRows = Math.max(3, Math.min(25, parseInt(newRows, 10) || 11));
@@ -167,7 +172,7 @@
         generate();
       }
 
-      var SMILEY = [
+      var SMILEY_LARGE = [
         [0,0,0,0,0,0,0,0,0,0,0],
         [0,1,1,1,0,0,0,1,1,1,0],
         [0,1,0,1,0,0,0,1,0,1,0],
@@ -179,6 +184,22 @@
         [0,0,1,0,0,0,0,0,1,0,0],
         [0,0,0,1,1,1,1,1,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0]
+      ];
+      var SMILEY_SMALL = [
+        [0,0,0,0,0,0,0],
+        [0,1,1,0,1,1,0],
+        [0,1,1,0,1,1,0],
+        [0,0,0,0,0,0,0],
+        [0,1,0,0,0,1,0],
+        [0,0,1,1,1,0,0],
+        [0,0,0,0,0,0,0]
+      ];
+      var PATTERN_5X5 = [
+        [0,0,1,0,0],
+        [0,1,0,1,0],
+        [1,0,1,0,1],
+        [0,1,0,1,0],
+        [0,0,1,0,0]
       ];
 
       // MESS logo: 15×15, center cross (row 7, col 7), 7×7 per quadrant = 1 Rand + 5×5 Buchstabe + 1 Rand
@@ -341,9 +362,19 @@
         renderGrid();
       }
 
-      document.getElementById('btnSmiley').addEventListener('click', function () {
+      document.getElementById('btn5x5').addEventListener('click', function () {
+        resizeGrid(5, 5);
+        applyPreset(PATTERN_5X5);
+        generate();
+      });
+      document.getElementById('btnSmileyLarge').addEventListener('click', function () {
         resizeGrid(11, 11);
-        applyPreset(SMILEY);
+        applyPreset(SMILEY_LARGE);
+        generate();
+      });
+      document.getElementById('btnSmileySmall').addEventListener('click', function () {
+        resizeGrid(7, 7);
+        applyPreset(SMILEY_SMALL);
         generate();
       });
       document.getElementById('btnLogo').addEventListener('click', function () {
@@ -361,14 +392,16 @@
       if (gridColsEl) gridColsEl.addEventListener('change', function () { resizeGrid(gridRowsEl ? gridRowsEl.value : ROWS, this.value); });
 
       var markerTypeEl = document.getElementById('markerType');
-      var apriltagInfoEl = document.getElementById('apriltagInfo');
+      var markerTypeInfoEl = document.getElementById('markerTypeInfo');
       var generateSectionEl = document.getElementById('generateSection');
       function updateMarkerTypeUI() {
         var isApril = markerTypeEl && markerTypeEl.value === 'apriltag';
-        if (apriltagInfoEl) apriltagInfoEl.style.display = isApril ? 'block' : 'none';
+        if (markerTypeInfoEl) {
+          markerTypeInfoEl.textContent = isApril
+            ? 'AprilTag 36h11 (587 IDs). Filled = real tags (ID 0–586). Empty = fill with fake markers or leave blank (Fill grid).'
+            : 'ArUco 4×4 (DICT_4X4_1000). Filled = ID 1–250. Empty = Fill grid (251+) or blank. Use scanner 4×4 (1000) + Byte swap (OpenCV).';
+        }
         if (generateSectionEl) generateSectionEl.style.display = 'block';
-        var note = document.getElementById('layoutNote');
-        if (note) note.textContent = isApril ? "AprilTag: Filled = ID 0–586. Empty = Fill grid (fake) or blank." : "ArUco: Filled = ID 1–250. Empty = Fill grid (251+) or blank. Use scanner 4×4 (1000) + Byte swap (OpenCV).";
         renderGrid();
         generate();
       }
@@ -378,8 +411,8 @@
 
       function generate() {
         var isApril = document.getElementById('markerType').value === 'apriltag';
-        var markerPx = Math.max(20, Math.min(200, parseInt(document.getElementById('markerPx').value, 10) || 60));
-        var padding = Math.max(2, Math.min(60, parseInt(document.getElementById('paddingPx').value, 10) || 14));
+        var markerPx = Math.max(20, Math.min(200, parseInt(document.getElementById('markerPx').value, 10) || 100));
+        var padding = Math.max(2, Math.min(60, parseInt(document.getElementById('paddingPx').value, 10) || 19));
         var cellsPerTag = isApril ? 8 : 6;
         var cellPx = Math.floor(markerPx / cellsPerTag);
         var totalCell = cellsPerTag * cellPx;
@@ -431,12 +464,25 @@
         link.style.marginLeft = '0.5rem';
       }
 
-      document.getElementById('markerPx').addEventListener('input', generate);
-      document.getElementById('paddingPx').addEventListener('input', generate);
+      var markerPxEl = document.getElementById('markerPx');
+      var paddingPxEl = document.getElementById('paddingPx');
+      function syncPaddingFromMarkerSize() {
+        var mp = Math.max(20, Math.min(200, parseInt(markerPxEl.value, 10) || 100));
+        var qz = Math.round(1.5 * (mp / 8));
+        if (paddingPxEl) paddingPxEl.value = Math.max(2, Math.min(60, qz));
+      }
+      if (markerPxEl) {
+        markerPxEl.addEventListener('input', function () {
+          syncPaddingFromMarkerSize();
+          generate();
+        });
+      }
+      if (paddingPxEl) paddingPxEl.addEventListener('input', generate);
 
-      applyPreset(SMILEY);
+      applyPreset(SMILEY_SMALL);
       renderGrid();
       updateMarkerTypeUI();
+      syncPaddingFromMarkerSize();
       generate();
     })();
   </script>

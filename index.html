@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ArUco &amp; AprilTag — Scanner &amp; Generator</title>
+  <title>AprilTag &amp; ArUco — Scanner &amp; Generator</title>
   <link rel="icon" href="https://mess.engineering/favicon/favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="https://mess.engineering/favicon/apple-touch-icon.png">
   <style>
@@ -77,21 +77,44 @@
     .credits a { color: var(--accent); text-decoration: none; }
     .credits a:hover { text-decoration: underline; }
     .credits .refs { margin-top: 0.5rem; }
-    .footer-by { margin-top: 0.75rem; padding-bottom: 0.5rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
+    .footer-by { margin-top: 0.75rem; padding-bottom: 0.5rem; font-size: 1.2rem; color: var(--muted); text-align: center; }
     .footer-by a { color: var(--accent); text-decoration: none; }
     .footer-by a:hover { text-decoration: underline; }
+    .source-link-wrap { text-align: center; margin-top: 2.5rem; }
+    .source-link {
+      display: inline-block;
+      padding: 0.65rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 1.0rem;
+      text-decoration: none;
+      margin-bottom: 0.2rem;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .source-link:hover {
+      background: #232328;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
   </style>
 </head>
 <body>
   <div class="hero">
-    <h1>ArUco &amp; AprilTag</h1>
-    <p class="sub">Scanner and pattern generator — ArUco 4×4 and AprilTag 36h11, runs in the browser.</p>
+    <h1>AprilTag &amp; ArUco</h1>
+    <p class="sub">Scanner and pattern generator — AprilTag 36h11 and ArUco 4x4, runs in the browser.</p>
     <nav class="links">
       <a href="scanner.html" class="primary">Scanner (camera)</a>
       <a href="generator.html">Pattern generator</a>
     </nav>
-    <p class="mini-guide">Use PC + phone for a bit of fun: show a pattern on one device, open the scanner on the other and point the camera at it — instant mini AR game.</p>
-  </div>
+    <p class="mini-guide">
+      No apps, no backend, no tracking, no uploads — just a webpage. Use PC + phone: generate on one device, scan on the other for instant end-to-end validation.
+    </p>  
+    <div class="source-link-wrap">
+      <a href="https://github.com/PiMaV/fiducial-webview" class="source-link"
+         target="_blank" rel="noopener">Source (MIT)</a>
+    </div>
 
   <section class="credits" id="credits">
     <h2>Powered by (used in this app)</h2>
