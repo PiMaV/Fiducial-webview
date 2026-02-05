@@ -5,5 +5,6 @@ __pycache__/
 markers/*.png
 # Generated AprilTag PNGs (run tests/apriltag36h11_gen.py to recreate)
 tests/apriltag36h11_out/
+Screenshots/
 
 linkedin_post.md

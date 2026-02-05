@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +16,11 @@
       --text: #e8e8ec;
       --muted: #888;
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
@@ -27,6 +32,7 @@
       align-items: center;
       padding: 1.5rem 1rem;
     }
+
     .hero {
       flex: 1;
       display: flex;
@@ -35,23 +41,97 @@
       justify-content: center;
       text-align: center;
     }
-    h1 { font-size: clamp(1.5rem, 5vw, 2rem); color: var(--accent); margin: 0 0 0.5rem 0; }
-    .sub { font-size: 0.95rem; color: var(--muted); margin-bottom: 2.5rem; max-width: 28rem; }
-    .links { display: flex; flex-wrap: wrap; gap: 1.25rem; justify-content: center; }
+
+    .hero-sep {
+      width: 60px;
+      margin: 2.2rem auto;
+      border: none;
+      border-top: 1px solid #ddd;
+    }
+
+    h1 {
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      color: var(--accent);
+      margin: 0 0 0.5rem 0;
+    }
+
+    .sub {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      max-width: 28rem;
+    }
+
+    .human-line {
+      font-size: 1.0rem;
+      margin: 0.25rem 0 0.5rem 0;
+      max-width: 32rem;
+      color: var(--text);
+    }
+
+    .links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      /* Abstand zwischen Buttons */
+      margin-top: 2rem;
+      /* Abstand nach oben */
+    }
+
     .links a {
       display: inline-block;
-      padding: 1rem 2rem;
+      padding: 0.9rem 2.2rem;
       border: 1px solid var(--border);
       border-radius: 10px;
       background: var(--surface);
       color: var(--accent);
       text-decoration: none;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       transition: background 0.2s, border-color 0.2s;
     }
-    .links a:hover { background: #25252c; border-color: var(--accent); }
-    .links a.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
-    .links a.primary:hover { filter: brightness(1.1); }
+
+    .links a:hover {
+      border-color: var(--accent);
+      background: #25252c;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0), 0 0 18px rgba(0, 255, 200, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .links a {
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, color 0.2s;
+    }
+
+    .links a.primary {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
+
+    .links a.primary:hover {
+      filter: brightness(1.08);
+      box-shadow: 0 0 18px rgba(0, 255, 200, 0.22);
+      transform: translateY(-1px);
+    }
+
+
+    @media (max-width: 520px) {
+      .links {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .links a {
+        width: 100%;
+        max-width: 280px;
+      }
+    }
+
+    .links a:active {
+      transform: translateY(0px);
+      filter: brightness(0.98);
+    }
+
+
     .mini-guide {
       margin-top: 1.5rem;
       padding: 0.75rem 1rem;
@@ -61,75 +141,168 @@
       text-align: center;
       line-height: 1.45;
     }
+
     .credits {
-      margin-top: auto;
+      margin: 2.5rem auto 0 auto;
       padding: 0.75rem 1rem;
       max-width: 30rem;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 0.75rem;
+      line-height: 1.35;
       text-align: left;
     }
-    .credits h2 { font-size: 0.8rem; color: var(--accent); margin: 0 0 0.35rem 0; }
-    .credits ul { margin: 0 0 0.5rem 0; padding-left: 1rem; }
-    .credits li { margin-bottom: 0.15rem; }
-    .credits a { color: var(--accent); text-decoration: none; }
-    .credits a:hover { text-decoration: underline; }
-    .credits .refs { margin-top: 0.5rem; }
-    .footer-by { margin-top: 0.75rem; padding-bottom: 0.5rem; font-size: 1.2rem; color: var(--muted); text-align: center; }
-    .footer-by a { color: var(--accent); text-decoration: none; }
-    .footer-by a:hover { text-decoration: underline; }
-    .source-link-wrap { text-align: center; margin-top: 2.5rem; }
+
+
+    .credits h2 {
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin: 0 0 0.35rem 0;
+    }
+
+    .credits ul {
+      margin: 0 0 0.5rem 0;
+      padding-left: 1rem;
+    }
+
+    .credits li {
+      margin-bottom: 0.15rem;
+    }
+
+    .credits a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .credits a:hover {
+      text-decoration: underline;
+    }
+
+    .credits .refs {
+      margin-top: 0.5rem;
+    }
+
+    .footer-by {
+      margin-top: 0.75rem;
+      padding-bottom: 0.5rem;
+      font-size: 1.2rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .footer-by a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .footer-by a:hover {
+      text-decoration: underline;
+    }
+
+    footer.meta {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 0.75rem;
+    }
+
+
     .source-link {
       display: inline-block;
-      padding: 0.65rem 1.5rem;
+      padding: 0.35rem 0.85rem;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--surface);
+      border-radius: 999px;
+      background: transparent;
       color: var(--muted);
-      font-size: 1.0rem;
+      font-size: 0.9rem;
       text-decoration: none;
-      margin-bottom: 0.2rem;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      transition: border-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
     }
+
     .source-link:hover {
-      background: #232328;
       border-color: var(--accent);
       color: var(--accent);
+      box-shadow: 0 0 12px rgba(0, 255, 200, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .source-link:active {
+      transform: translateY(0);
+    }
+
+    .source-link-wrap {
+      text-align: center;
+      margin-top: 1.25rem;
     }
   </style>
 </head>
+
 <body>
   <div class="hero">
-    <h1>AprilTag &amp; ArUco</h1>
-    <p class="sub">Scanner and pattern generator — AprilTag 36h11 and ArUco 4x4, runs in the browser.</p>
-    <nav class="links">
-      <a href="scanner.html" class="primary">Scanner (camera)</a>
-      <a href="generator.html">Pattern generator</a>
-    </nav>
+    <h1>Fiducial Marker Tools</h1>
+
+    <p class="sub">
+      Scanner and generator for AprilTag (36h11) and ArUco (4x4) — runs directly in the browser.
+    </p>
+
+    <p class="human-line">
+      Create a marker on one screen, scan it with another device — instantly.
+    </p>
+
     <p class="mini-guide">
-      No apps, no backend, no tracking, no uploads — just a webpage. Use PC + phone: generate on one device, scan on the other for instant end-to-end validation.
-    </p>  
+      No apps, no backend, no tracking, no uploads — everything runs locally in your browser.
+    </p>
+
+    <hr class="hero-sep">
+
+    <nav class="links">
+      <a href="generator.html" class="primary">Open Generator</a>
+      <a href="scanner.html">Open Scanner</a>
+    </nav>
+
+    <hr class="hero-sep">
+
+
+  </div>
+
+  <footer class="meta">
+
     <div class="source-link-wrap">
-      <a href="https://github.com/PiMaV/fiducial-webview" class="source-link"
-         target="_blank" rel="noopener">Source (MIT)</a>
+      <a href="https://github.com/PiMaV/fiducial-webview" class="source-link" target="_blank" rel="noopener">
+        Source (MIT)
+      </a>
+
     </div>
 
-  <section class="credits" id="credits">
-    <h2>Powered by (used in this app)</h2>
-    <ul>
-      <li><a href="https://github.com/damianofalcioni/js-aruco2" target="_blank" rel="noopener">js-aruco2</a> (Damiano Falcioni) — ArUco detection in the browser (delivered via jsDelivr).</li>
-      <li><a href="https://github.com/arenaxr/apriltag-js-standalone" target="_blank" rel="noopener">apriltag-js-standalone</a> (ARENA) — AprilTag 36h11 detection (WASM, loaded from arenaxr.github.io).</li>
-    </ul>
-    <h2 class="refs">References (docs / related projects, not loaded)</h2>
-    <ul>
-      <li><a href="https://github.com/AprilRobotics/apriltag-generation" target="_blank" rel="noopener">AprilRobotics/apriltag-generation</a> — AprilTag 36h11 layout (Java).</li>
-      <li><a href="https://github.com/arenaxr/apriltag-gen" target="_blank" rel="noopener">arenaxr/apriltag-gen</a> — AprilTag tag generation.</li>
-      <li><a href="https://github.com/rossng/apriltag-mobile" target="_blank" rel="noopener">rossng/apriltag-mobile</a> — AprilTag mobile.</li>
-    </ul>
-  </section>
+    <section class="credits" id="credits">
+      <h2>Powered by (used in this app)</h2>
+      <ul>
+        <li><a href="https://github.com/damianofalcioni/js-aruco2" target="_blank" rel="noopener">js-aruco2</a> (Damiano
+          Falcioni) — ArUco detection in the browser (delivered via jsDelivr).</li>
+        <li><a href="https://github.com/arenaxr/apriltag-js-standalone" target="_blank"
+            rel="noopener">apriltag-js-standalone</a> (ARENA) — AprilTag 36h11 detection (WASM, loaded from
+          arenaxr.github.io).</li>
+      </ul>
+      <h2 class="refs">References (docs / related projects, not loaded)</h2>
+      <ul>
+        <li><a href="https://github.com/AprilRobotics/apriltag-generation" target="_blank"
+            rel="noopener">AprilRobotics/apriltag-generation</a> — AprilTag 36h11 layout (Java).</li>
+        <li><a href="https://github.com/arenaxr/apriltag-gen" target="_blank" rel="noopener">arenaxr/apriltag-gen</a> —
+          AprilTag tag generation.</li>
+        <li><a href="https://github.com/rossng/apriltag-mobile" target="_blank"
+            rel="noopener">rossng/apriltag-mobile</a>
+          — AprilTag mobile.</li>
+      </ul>
+    </section>
 
-  <p class="footer-by"><a href="https://mess.engineering" target="_blank" rel="noopener" title="Mattern Engineering &amp; Software Solutions">M.E.S.S.</a></p>
+
+
+
+    <p class="footer-by"><a href="https://mess.engineering" target="_blank" rel="noopener"
+        title="Mattern Engineering &amp; Software Solutions">M.E.S.S.</a></p>
+  </footer>
 </body>
+
 </html>
